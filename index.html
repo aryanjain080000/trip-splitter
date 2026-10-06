@@ -79,6 +79,7 @@ button,input,select{font:inherit}button{cursor:pointer}.app{max-width:1180px;mar
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { getDatabase, ref, onValue, set, remove, push, update } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 // ============================================================
@@ -143,7 +144,10 @@ async function init(){
  const placeholder=String(firebaseConfig.apiKey).startsWith('PASTE_');
  if(placeholder){fallbackLoad();renderAll();setStatus('Not connected — add Firebase config to enable sharing',false);return}
  try{
-  const app=initializeApp(firebaseConfig);db=getDatabase(app);tripRef=ref(db,`trips/${TRIP_ID}`);
+  const app=initializeApp(firebaseConfig);
+  const auth=getAuth(app);
+  await signInAnonymously(auth);
+  db=getDatabase(app);tripRef=ref(db,`trips/${TRIP_ID}`);
   onValue(tripRef,snap=>{const raw=snap.val()||{};state.groupName=raw.groupName||'';state.people=normalize(raw).people;state.expenses=normalize(raw).expenses;renderAll();setStatus('Live & synced',true)});
  }catch(err){console.error(err);fallbackLoad();renderAll();setStatus('Connection error — using this device only',false);alert('Could not connect to the online database. Check your Firebase configuration.');}
 }
